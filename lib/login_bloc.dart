@@ -23,6 +23,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           if (responseBody['Status'] == 'OK') {
             final dataString = responseBody['Data'];
             final data = jsonDecode(dataString); // Giải mã chuỗi Data
+            print('responseBody: $responseBody');
             print('Username: ${data['username']}'); // In ra username
             print('Token: ${data['token']}'); // In ra token
             emit(LoginSuccess(data: data)); // Truyền data vào đây

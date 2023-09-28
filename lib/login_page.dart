@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_app/api_service.dart';
 import 'package:flutter_login_app/home_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'login_bloc.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,6 +19,12 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController(text: "abc@123456");
   String appBarTitle = 'Đăng Nhập'; // Khởi tạo giá trị mặc định cho appBarTitle
 
+  Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+    print('Token Saved: $token');
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -32,6 +39,7 @@ class _LoginPageState extends State<LoginPage> {
                     data['username']; // Cập nhật giá trị của appBarTitle
               });
             }
+            saveToken(data['token']);
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
