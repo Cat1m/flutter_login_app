@@ -1,12 +1,15 @@
+// Trong file home_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_login_app/api_service.dart';
+import 'package:flutter_login_app/database_helper.dart';
 import 'package:flutter_login_app/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatelessWidget {
   final Map<String, dynamic> data;
+  final DatabaseHelper dbHelper = DatabaseHelper.instance;
 
-  const HomePage({Key? key, required this.data}) : super(key: key);
+  HomePage({Key? key, required this.data}) : super(key: key);
 
   Future<void> _logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
@@ -38,8 +41,55 @@ class HomePage extends StatelessWidget {
             Text('Username: $username'),
             Text('Token: $token'),
             ElevatedButton(
-              onPressed: () => _logout(context), // Thêm sự kiện khi nhấn nút
+              onPressed: () => _logout(context),
               child: const Text('Đăng Xuất'),
+            ),
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future: dbHelper.fetchData(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  final data = snapshot.data;
+
+                  return DataTable(
+                    dataTextStyle: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.amber),
+                    columns: const [
+                      DataColumn(
+                        label: Text('ID'),
+                      ),
+                      DataColumn(
+                        label: Text('Username'),
+                      ),
+                      DataColumn(
+                        label: Text('Token'),
+                      ),
+                    ],
+                    rows: data!
+                        .map((row) => DataRow(cells: [
+                              DataCell(
+                                Text(
+                                  row['id'].toString(),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  row['username'],
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  row['token'],
+                                ),
+                              ),
+                            ]))
+                        .toList(),
+                  );
+                }
+              },
             ),
           ],
         ),
