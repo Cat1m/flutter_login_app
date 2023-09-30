@@ -1,15 +1,16 @@
 // Trong file home_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_login_app/api_service.dart';
-import 'package:flutter_login_app/database_helper.dart';
+import 'package:flutter_login_app/database/database_helper.dart';
+
 import 'package:flutter_login_app/login_page.dart';
+import 'package:flutter_login_app/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatelessWidget {
-  final Map<String, dynamic> data;
   final DatabaseHelper dbHelper = DatabaseHelper.instance;
 
-  HomePage({Key? key, required this.data}) : super(key: key);
+  HomePage({Key? key}) : super(key: key);
 
   Future<void> _logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
@@ -20,8 +21,7 @@ class HomePage extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (context) => LoginPage(
-          apiService: ApiService
-              .create(), // Sử dụng phương t00000000000000000000000000hức create() để tạo instance của ApiService
+          apiService: ApiService.create(),
         ),
       ),
     );
@@ -29,71 +29,43 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final username = data['username'];
-    final token = data['token'];
+    return FutureBuilder<List<User>>(
+      future: dbHelper.fetchDataAsUsers(), // Lấy dữ liệu từ database
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator(); // Hiển thị loading khi đang chờ dữ liệu
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}'); // Hiển thị lỗi nếu có
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Text(
+              'Không có dữ liệu'); // Hiển thị thông báo nếu không có dữ liệu
+        } else {
+          final user = snapshot.data!.first;
+          // Lấy dữ liệu đầu tiên từ kết quả trả về
+          final username = user.username;
+          final token = user.token;
+          final deviceId = user.deviceId;
 
-    return Scaffold(
-      appBar: AppBar(title: Text('$username')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Username: $username'),
-            Text('Token: $token'),
-            ElevatedButton(
-              onPressed: () => _logout(context),
-              child: const Text('Đăng Xuất'),
+          return Scaffold(
+            appBar: AppBar(title: Text('$username')),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Username: $username'),
+                  Text('Token: $token'),
+                  Text('ID: $deviceId'),
+                  ElevatedButton(
+                    onPressed: () => _logout(context),
+                    child: const Text('Đăng Xuất'),
+                  ),
+                  // Phần hiển thị bảng dữ liệu giữ nguyên
+                ],
+              ),
             ),
-            FutureBuilder<List<Map<String, dynamic>>>(
-              future: dbHelper.fetchData(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  final data = snapshot.data;
-
-                  return DataTable(
-                    dataTextStyle: const TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.amber),
-                    columns: const [
-                      DataColumn(
-                        label: Text('ID'),
-                      ),
-                      DataColumn(
-                        label: Text('Username'),
-                      ),
-                      DataColumn(
-                        label: Text('Token'),
-                      ),
-                    ],
-                    rows: data!
-                        .map((row) => DataRow(cells: [
-                              DataCell(
-                                Text(
-                                  row['id'].toString(),
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  row['username'],
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  row['token'],
-                                ),
-                              ),
-                            ]))
-                        .toList(),
-                  );
-                }
-              },
-            ),
-          ],
-        ),
-      ),
+          );
+        }
+      },
     );
   }
 }

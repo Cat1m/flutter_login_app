@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_app/home_page.dart';
+
 import 'package:flutter_login_app/login_bloc.dart';
 import 'package:flutter_login_app/login_page.dart';
+import 'package:flutter_login_app/user_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 
@@ -29,7 +31,7 @@ class MyApp extends StatelessWidget {
               create: (context) => LoginBloc(apiService: apiService),
               child: initialToken == null
                   ? LoginPage(apiService: apiService)
-                  : HomePage(data: {'token': initialToken}),
+                  : HomePage(),
             ),
       },
     );

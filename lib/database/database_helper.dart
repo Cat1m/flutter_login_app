@@ -1,3 +1,4 @@
+import 'package:flutter_login_app/models/user.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -42,9 +43,9 @@ class DatabaseHelper {
         ''');
   }
 
-  Future<int> insert(Map<String, Object?> data) async {
+  Future<int> insert(User user) async {
     Database db = await database;
-    return await db.insert(table, data);
+    return await db.insert(table, user.toMap());
   }
 
   Future<List<Map<String, Object?>>> queryAllRows() async {
@@ -62,7 +63,7 @@ class DatabaseHelper {
   }
 
   // Phương thức để cập nhật dữ liệu
-  Future<void> updateData(Map<String, Object?> data) async {
+  Future<void> updateData(User user) async {
     // Kiểm tra xem bảng có dữ liệu không
     List<Map<String, Object?>> existingData = await queryAllRows();
 
@@ -72,7 +73,7 @@ class DatabaseHelper {
     }
 
     // Thêm dữ liệu mới vào bảng
-    await insert(data);
+    await insert(user);
   }
 
   // Phương thức để xóa tất cả dữ liệu trong bảng
@@ -81,10 +82,11 @@ class DatabaseHelper {
     return await db.rawDelete('DELETE FROM $table');
   }
 
-  // Trong file database_helper.dart
-  Future<List<Map<String, dynamic>>> fetchData() async {
-    // Giả sử bạn có một database và bạn muốn lấy tất cả các hàng từ bảng tên là 'user'
-    final db = await database;
-    return await db.query(table);
+  //truy vấn dữ liệu và trả về 1 users list
+
+  Future<List<User>> fetchDataAsUsers() async {
+    final queryResult = await queryAllRows();
+    final users = queryResult.map((map) => User.fromMap(map)).toList();
+    return users;
   }
 }

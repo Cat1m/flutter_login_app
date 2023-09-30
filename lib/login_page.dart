@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_app/api_service.dart';
 import 'package:flutter_login_app/home_page.dart';
+import 'package:flutter_login_app/user_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login_bloc.dart';
 
@@ -43,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => HomePage(data: data),
+                builder: (context) => HomePage(),
               ),
             );
           } else if (state is LoginFailure) {

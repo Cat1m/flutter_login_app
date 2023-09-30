@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_app/api_service.dart';
-import 'package:flutter_login_app/database_helper.dart';
+import 'package:flutter_login_app/database/database_helper.dart';
+import 'package:flutter_login_app/models/user.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final ApiService apiService;
@@ -26,20 +27,26 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         if (response.statusCode == 200) {
           if (responseBody['Status'] == 'OK') {
             final dataString = responseBody['Data'];
-            final data = jsonDecode(dataString);
-            print('Data: $data');
+            // bỏ hẳn dùng data
+            //final data = jsonDecode(dataString);
+            //print('Data: $data');
+            User user = User.fromMap(jsonDecode(dataString));
+            print('đây là user: $user');
+            print('Kiểu dữ liệu của user là: ${user.runtimeType}');
+
+            //await dbHelper.insert(user);
 
             //update data để đảm bảo luôn chỉ lưu 1 user
-            await dbHelper.updateData(data);
+            await dbHelper.updateData(user);
             List<Map<String, dynamic>> rows = await dbHelper.queryAllRows();
 
             //các lệnh in ra để kiểm tra thông tin nhận:
             print('row có giá trị là: $rows');
             print('responseBody: $responseBody');
-            print('Username: ${data['username']}');
-            print('Token: ${data['token']}');
+            print('Username: ${user.username}');
+            print('Token: ${user.token}');
 
-            emit(LoginSuccess(data: data));
+            emit(LoginSuccess(data: user.toMap()));
           } else {
             final message =
                 responseBody['Messenge'] ?? 'Không có thông báo lỗi';
